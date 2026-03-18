@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maritime Blue — Funding Landscape & Impact Brief</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #0A2342;
+    --ocean: #1565C0;
+    --teal: #00838F;
+    --aqua: #26C6DA;
+    --seafoam: #B2EBF2;
+    --sand: #F5F5F0;
+    --risk-red: #C62828;
+    --risk-amber: #E65100;
+    --safe-green: #2E7D32;
+    --gold: #F9A825;
+    --light-gray: #ECEFF1;
+    --mid-gray: #90A4AE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--sand); color: #263238; }
+
+  /* Header with tabs */
+  header {
+    background: linear-gradient(135deg, #002171 0%, var(--ocean) 100%);
+    color: white; padding: 28px 40px 0;
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; }
+  header .logo-icon { width: 48px; height: 48px; background: var(--aqua); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  header h1 { font-size: 21px; font-weight: 700; }
+  header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  .tabs { display: flex; gap: 0; }
+  .tab { padding: 10px 22px; cursor: pointer; font-size: 13px; font-weight: 600;
+    border-bottom: 3px solid transparent; color: rgba(255,255,255,0.65);
+    transition: all 0.2s; }
+  .tab.active { color: white; border-bottom-color: var(--aqua); }
+  .tab:hover { color: white; }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 28px; }
+
+  /* Sections */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card { background: white; border-radius: 12px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px; }
+  .card-title .icon { font-size: 16px; }
+
+  /* KPIs */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+  .kpi-card { background: white; border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center; }
+  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--mid-gray); margin-bottom: 8px; }
+  .kpi-value { font-size: 30px; font-weight: 800; color: var(--navy); line-height: 1; }
+  .kpi-unit { font-size: 13px; color: #607D8B; margin-top: 4px; }
+  .kpi-arrow { font-size: 12px; font-weight: 700; margin-top: 4px; }
+  .up { color: var(--safe-green); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+
+  /* Alumni cards */
+  .alumni-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .alumni-card { background: white; border-radius: 12px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-top: 3px solid var(--ocean); }
+  .alumni-wave { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--mid-gray); }
+  .alumni-name { font-size: 15px; font-weight: 700; color: var(--navy); margin: 4px 0; }
+  .alumni-desc { font-size: 12px; color: #607D8B; margin-bottom: 10px; line-height: 1.5; }
+  .alumni-raised { font-size: 18px; font-weight: 800; color: var(--ocean); }
+  .alumni-sub { font-size: 11px; color: #90A4AE; }
+  .alumni-tag { display: inline-block; background: var(--seafoam); color: var(--teal);
+    padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; margin-top: 4px; }
+
+  /* Impact timeline */
+  .cohort-row { display: grid; grid-template-columns: 80px 1fr; gap: 14px; align-items: start;
+    padding: 12px 0; border-bottom: 1px solid #ECEFF1; }
+  .cohort-row:last-child { border-bottom: none; }
+  .cohort-badge { background: var(--navy); color: white; border-radius: 8px;
+    padding: 6px 10px; text-align: center; font-size: 11px; font-weight: 700; }
+  .cohort-data { display: flex; gap: 20px; flex-wrap: wrap; }
+  .cohort-stat { }
+  .cohort-stat .num { font-size: 16px; font-weight: 700; color: var(--ocean); }
+  .cohort-stat .lbl { font-size: 11px; color: #90A4AE; }
+
+  /* Prospect cluster section */
+  .cluster-intro { background: linear-gradient(135deg, #E3F2FD, #E0F7FA); border-radius: 12px;
+    padding: 20px 24px; margin-bottom: 22px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  .cluster-intro h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+  .cluster-intro p { font-size: 13px; color: #455A64; line-height: 1.7; }
+  .cluster-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-self: center; }
+  .c-stat { background: white; border-radius: 8px; padding: 12px; text-align: center; }
+  .c-stat .v { font-size: 22px; font-weight: 800; color: var(--ocean); }
+  .c-stat .l { font-size: 11px; color: #90A4AE; margin-top: 2px; }
+
+  /* Prospect cards */
+  .prospect-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+  .prospect-card { background: white; border-radius: 12px; padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 4px solid #ccc; }
+  .prospect-card.tier1 { border-left-color: #F9A825; }
+  .prospect-card.tier2 { border-left-color: var(--ocean); }
+  .prospect-card.tier3 { border-left-color: var(--teal); }
+  .p-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .p-name { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .p-hq { font-size: 11px; color: #90A4AE; margin-top: 1px; }
+  .tier-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .tier1 .tier-badge { background: #FFF8E1; color: #E65100; }
+  .tier2 .tier-badge { background: #E3F2FD; color: var(--ocean); }
+  .tier3 .tier-badge { background: #E0F7FA; color: var(--teal); }
+  .p-amount { font-size: 20px; font-weight: 800; color: var(--ocean); }
+  .p-amount-label { font-size: 11px; color: #90A4AE; }
+  .p-alignment { margin-top: 10px; }
+  .p-tag { display: inline-block; background: #F5F5F0; color: #546E7A;
+    padding: 3px 9px; border-radius: 8px; font-size: 11px; margin: 2px 2px 2px 0; }
+  .p-tag.match { background: #E8F5E9; color: var(--safe-green); }
+  .p-notes { font-size: 12px; color: #607D8B; margin-top: 10px; line-height: 1.6; border-top: 1px solid #ECEFF1; padding-top: 8px; }
+
+  /* Gap analysis */
+  .gap-matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .gap-cell { border-radius: 10px; padding: 14px; text-align: center; }
+  .gap-cell.filled { background: #E8F5E9; border: 1px solid #A5D6A7; }
+  .gap-cell.partial { background: #FFF3E0; border: 1px solid #FFCC02; }
+  .gap-cell.empty { background: #FFEBEE; border: 1px solid #EF9A9A; }
+  .gap-icon { font-size: 24px; margin-bottom: 6px; }
+  .gap-label { font-size: 12px; font-weight: 700; color: var(--navy); }
+  .gap-status { font-size: 11px; margin-top: 4px; }
+  .gap-cell.filled .gap-status { color: var(--safe-green); }
+  .gap-cell.partial .gap-status { color: var(--risk-amber); }
+  .gap-cell.empty .gap-status { color: var(--risk-red); }
+
+  /* Priority score bar */
+  .priority-bar-wrap { margin-top: 8px; }
+  .priority-label { font-size: 11px; color: #90A4AE; margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .priority-bar-bg { height: 6px; background: #ECEFF1; border-radius: 3px; }
+  .priority-bar-fill { height: 6px; border-radius: 3px; transition: width 1s ease; }
+  .bar-gold { background: linear-gradient(90deg, #F9A825, #FFD54F); }
+  .bar-blue { background: linear-gradient(90deg, var(--ocean), var(--aqua)); }
+  .bar-teal { background: linear-gradient(90deg, var(--teal), #80DEEA); }
+
+  footer { text-align: center; padding: 20px; color: var(--mid-gray); font-size: 12px; }
+  .chart-wrap { position: relative; height: 220px; }
+  .chart-wrap-sm { position: relative; height: 180px; /* CSS layout value */ }
+
+  /* Narrative box */
+  .narrative { background: linear-gradient(135deg, var(--navy), #1565C0); color: white;
+    border-radius: 12px; padding: 22px 28px; margin-bottom: 20px; }
+  .narrative h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .narrative p { font-size: 13px; line-height: 1.8; opacity: 0.9; }
+  .narrative .stat-inline { background: rgba(255,255,255,0.15); border-radius: 8px;
+    padding: 3px 10px; font-weight: 700; font-size: 14px; display: inline; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="logo-icon">🌊</div>
+      <div>
+        <h1>Maritime Blue — Funding Landscape & Impact</h1>
+        <p>Philanthropic Prospect Clusters · Gap Analysis · Program Impact Brief</p>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.12); padding:6px 16px; border-radius:20px; font-size:12px;">
+      Strategic Development Brief · March 2026
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('impact')">📊 Impact Metrics</div>
+    <div class="tab" onclick="switchTab('landscape')">🗺 Funding Landscape</div>
+    <div class="tab" onclick="switchTab('prospects')">🎯 Prospect Clusters</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===== SECTION 1: IMPACT ===== -->
+  <div class="section active" id="impact">
+
+    <div class="narrative">
+      <h3>The Maritime Blue Story in Numbers</h3>
+      <p>Since 2020, Maritime Blue has built the Pacific Northwest's leading Blue Economy innovation cluster. The accelerator has invested ~$3.8M in 38 companies; alumni have collectively raised <span class="stat-inline">$300M+</span> — a ~79× multiplier on capital deployed. <span class="stat-inline">400+</span> jobs created. The <span class="stat-inline">$33M</span> Maritime Innovation Center (Port of Seattle + WA State capital investment, Maritime Blue anchor tenant) opens Summer 2026, cementing Washington's position as a global blue economy hub.</p>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Companies in Cluster</div>
+        <div class="kpi-value">130+</div>
+        <div class="kpi-unit">Maritime & ocean firms</div>
+        <div class="kpi-arrow up">↑ Growing</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Startups Accelerated</div>
+        <div class="kpi-value">38</div>
+        <div class="kpi-unit">Across 4 cohorts + incubators</div>
+        <div class="kpi-arrow up">Wave 5 launching 2025</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Jobs Created</div>
+        <div class="kpi-value">400+</div>
+        <div class="kpi-unit">Across portfolio companies</div>
+        <div class="kpi-arrow up">↑ Expanding</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Alumni Capital Raised</div>
+        <div class="kpi-value">$300M+</div>
+        <div class="kpi-unit">Total from program alumni</div>
+        <div class="kpi-arrow up">↑ Across all cohorts since 2020</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">MInC — Ecosystem Investment</div>
+        <div class="kpi-value">$33M</div>
+        <div class="kpi-unit">Port + WA State → Maritime Blue anchor tenant</div>
+        <div class="kpi-arrow up">Living Building Challenge · Opens Summer 2026</div>
+      </div>
+    </div>
+
+    <!-- ROI + charts -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">📈</span> Accelerator Capital Multiplier</div>
+        <div style="display:flex; align-items:center; justify-content:center; height:170px; flex-direction:column; gap:8px;">
+          <div style="font-size:64px; font-weight:900; color:var(--ocean); line-height:1;">~79x</div>
+          <div style="font-size:13px; color:#607D8B; text-align:center; max-width:300px; line-height:1.6;">
+            The accelerator invests $100K SAFE per company. 38 companies = ~$3.8M total deployed. Alumni have collectively raised $300M+ — a <strong>~79× multiplier</strong> on direct accelerator capital. Every $1 invested in the program has attracted ~$79 back into the regional Blue Economy.
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🌐</span> Blue Economy Global Context</div>
+        <div class="chart-wrap-sm">
+          <canvas id="globalCtx"></canvas>
+        </div>
+        <div style="font-size:11px; color:#90A4AE; margin-top:6px;">Bluetech + ocean observation startups: record $728M in 2025 (53% YoY vs 2024 subset). Broader Blue Economy VC reached $2.4B in 2024 (JP Morgan). Source: BlueInvest 2024, JP Morgan.</div>
+      </div>
+    </div>
+
+    <!-- Cohort timeline -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title"><span class="icon">🚀</span> Cohort Performance — Program History</div>
+      <div class="cohort-row">
+        <div class="cohort-badge">WAVE 1<br>2020</div>
+        <div class="cohort-data">
+          <div class="cohort-stat"><div class="num">Pure Watercraft</div><div class="lbl">Electric watercraft → $67.7M raised (latest: $5.08M Series B, Apr 2024)</div></div>
+          <div class="cohort-stat"><div class="num">Allosense</div><div class="lbl">Asset tracking → Funded by Expa Ventures (Garrett Camp, Uber co-founder) + Virgin Galactic investor (Richard Branson)</div></div>
+        </div>
+      </div>
+      <div class="cohort-row">
+        <div class="cohort-badge">WAVE 2<br>2021</div>
+        <div class="cohort-data">
+          <div class="cohort-stat"><div class="num">OpenTug</div><div class="lbl">Marine logistics platform → $5.3M total raised ($3.1M seed + $2.2M TMV, March 2025)</div></div>
+          <div class="cohort-stat"><div class="num">Silverback Marine</div><div class="lbl">Autonomous watercraft → Direct Maritime Blue equity investment</div></div>
+        </div>
+      </div>
+      <div class="cohort-row">
+        <div class="cohort-badge">WAVE 3<br>2022</div>
+        <div class="cohort-data">
+          <div class="cohort-stat"><div class="num">Algeon Materials</div><div class="lbl">Macroalgae-based plastic alternatives — circular economy innovation</div></div>
+          <div class="cohort-stat"><div class="num">Multiple active</div><div class="lbl">Cohort size not publicly disclosed · Algeon Materials most notable company</div></div>
+        </div>
+      </div>
+      <div class="cohort-row">
+        <div class="cohort-badge">WAVE 4<br>2023</div>
+        <div class="cohort-data">
+          <div class="cohort-stat"><div class="num">Atargis Energy</div><div class="lbl">Wave energy at $0.06/kWh — competitive with grid parity</div></div>
+          <div class="cohort-stat"><div class="num">HyperKelp</div><div class="lbl">Ocean data-as-a-service — ocean monitoring platform</div></div>
+        </div>
+      </div>
+      <div class="cohort-row" style="background:#E3F2FD; border-radius:8px; padding:12px; border:none; margin-top:8px;">
+        <div class="cohort-badge" style="background:var(--ocean);">WAVE 5<br>2025</div>
+        <div class="cohort-data">
+          <div class="cohort-stat"><div class="num" style="color:var(--ocean);">Launching Now</div><div class="lbl">5th Wave with Meliorate Partners + Zero Wake Fund (decarbonization focus)</div></div>
+          <div class="cohort-stat"><div class="num" style="color:var(--ocean);">+ MInC Opening</div><div class="lbl">15,000 sq ft innovation center at Fishermen's Terminal, Summer 2026</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alumni deep dive -->
+    <div class="alumni-grid">
+      <div class="alumni-card">
+        <div class="alumni-wave">Wave 1 · 2020</div>
+        <div class="alumni-name">Pure Watercraft</div>
+        <div class="alumni-desc">Electric watercraft motors for recreational and commercial use. Pioneering clean propulsion for marine vessels.</div>
+        <div class="alumni-raised">$67.7M</div>
+        <div class="alumni-sub">Total funding raised · Series B 2024</div>
+        <span class="alumni-tag">Clean Marine Tech</span>
+        <span class="alumni-tag">VC Backed</span>
+      </div>
+      <div class="alumni-card" style="border-top-color: var(--teal);">
+        <div class="alumni-wave">Wave 1 & 2 · 2020-21</div>
+        <div class="alumni-name">Allosense</div>
+        <div class="alumni-desc">Asset tracking via cellular, satellite & mesh tech. Reduces logistics inefficiencies across supply chains.</div>
+        <div class="alumni-raised">Expa + Branson</div>
+        <div class="alumni-sub">Expa Ventures (Garrett Camp, Uber co-founder) + Richard Branson separately</div>
+        <span class="alumni-tag">Logistics Tech</span>
+        <span class="alumni-tag">Celebrity-Backed</span>
+      </div>
+      <div class="alumni-card" style="border-top-color: var(--safe-green);">
+        <div class="alumni-wave">Wave 2 · 2021</div>
+        <div class="alumni-name">OpenTug</div>
+        <div class="alumni-desc">Marine transportation logistics & booking platform. Connecting shipping customers and service providers.</div>
+        <div class="alumni-raised">$5.3M</div>
+        <div class="alumni-sub">Total raised · $3.1M seed + $2.2M TMV (March 2025)</div>
+        <span class="alumni-tag">Marine Logistics</span>
+        <span class="alumni-tag">SaaS</span>
+      </div>
+      <div class="alumni-card" style="border-top-color: #7B1FA2;">
+        <div class="alumni-wave">Alumni · ~2022 (cohort unverified)</div>
+        <div class="alumni-name">Algeon Materials</div>
+        <div class="alumni-desc">Macroalgae-based plastic alternatives. Addressing marine pollution at the source with circular materials.</div>
+        <div class="alumni-raised">Circular Economy</div>
+        <div class="alumni-sub">SDG 14 aligned · Blue carbon potential</div>
+        <span class="alumni-tag">BioMaterials</span>
+        <span class="alumni-tag">Climate Impact</span>
+      </div>
+      <div class="alumni-card" style="border-top-color: var(--risk-amber);">
+        <div class="alumni-wave">Wave 4 · 2023</div>
+        <div class="alumni-name">Atargis Energy</div>
+        <div class="alumni-desc">Tidal energy at $0.06/kWh — approaching grid parity for renewable ocean-based power generation.</div>
+        <div class="alumni-raised">$0.06/kWh</div>
+        <div class="alumni-sub">Near grid parity · Ocean renewable energy</div>
+        <span class="alumni-tag">Wave Energy</span>
+        <span class="alumni-tag">Grid-Scale</span>
+      </div>
+      <div class="alumni-card" style="border-top-color: var(--aqua);">
+        <div class="alumni-wave">Wave 4 · 2023</div>
+        <div class="alumni-name">HyperKelp</div>
+        <div class="alumni-desc">Ocean data-as-a-service platform. Real-time ocean monitoring supporting fisheries, climate, and maritime ops.</div>
+        <div class="alumni-raised">Data Platform</div>
+        <div class="alumni-sub">Ocean monitoring + climate intelligence</div>
+        <span class="alumni-tag">Ocean Data</span>
+        <span class="alumni-tag">Climate Tech</span>
+      </div>
+    </div>
+
+    <!-- Maritime Forward Campaign -->
+    <div class="card" style="background: linear-gradient(135deg, #0A2342, #1565C0); color:white; margin-bottom:0;">
+      <div class="card-title" style="color:white;"><span class="icon">🏗</span> Maritime Forward Campaign — Current Status</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;">
+        <div>
+          <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">Campaign Goal</div>
+          <div style="font-size:28px; font-weight:800;">$10M</div>
+          <div style="font-size:12px; opacity:0.7;">First-ever capital campaign</div>
+        </div>
+        <div>
+          <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">Raised to Date</div>
+          <div style="font-size:28px; font-weight:800; color:#26C6DA;">$2M raised</div>
+          <div style="font-size:12px; opacity:0.7;">Capital portion secured</div>
+          <!-- Progress bar -->
+          <div style="margin-top:8px; background:rgba(255,255,255,0.2); border-radius:4px; height:8px;">
+            <div style="width:50%; height:8px; background:var(--aqua); border-radius:4px;"></div>
+          </div>
+          <div style="font-size:11px; opacity:0.6; margin-top:3px;">50% of $4M capital target raised · $2M of $10M total campaign (20%)</div>
+        </div>
+        <div>
+          <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">Still Needed</div>
+          <div style="font-size:28px; font-weight:800; color:#FFD54F;">$2M</div>
+          <div style="font-size:12px; opacity:0.7; line-height:1.5;">MInC capital gap · Opens Summer 2026 · <strong style="color:#FFD54F;">Urgent priority</strong></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 2: LANDSCAPE ===== -->
+  <div class="section" id="landscape">
+
+    <div class="cluster-intro">
+      <div>
+        <h3>The Philanthropic Opportunity Gap</h3>
+        <p>The global ocean philanthropy market has more than doubled in the past decade — reaching $1.2B/year by 2020 and growing rapidly. Blue tech VC hit $2.4B in 2024. The largest ocean foundations in the world — Packard, Moore, Walton, Bezos — are actively deploying hundreds of millions into exactly the space Maritime Blue operates. Yet none of them are currently Maritime Blue funders. This represents the single largest untapped opportunity for the organization's financial sustainability.</p>
+      </div>
+      <div class="cluster-stat-grid">
+        <div class="c-stat"><div class="v">$480M</div><div class="l">Packard Foundation ocean commitment</div></div>
+        <div class="c-stat"><div class="v">$250M</div><div class="l">Walton Foundation ocean pledge</div></div>
+        <div class="c-stat"><div class="v">$10B</div><div class="l">Bezos Earth Fund (by 2030)</div></div>
+        <div class="c-stat"><div class="v">$1.2B</div><div class="l">Annual ocean philanthropy market</div></div>
+      </div>
+    </div>
+
+    <!-- Funding gap matrix -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title"><span class="icon">🧩</span> Funding Category Coverage Analysis</div>
+      <div class="gap-matrix">
+        <div class="gap-cell filled">
+          <div class="gap-icon">🏛</div>
+          <div class="gap-label">Government / Public Sector</div>
+          <div class="gap-status">✓ Well Covered</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">Port of Seattle, WA Commerce, City of Tacoma</div>
+        </div>
+        <div class="gap-cell partial">
+          <div class="gap-icon">🏦</div>
+          <div class="gap-label">Federal Innovation Grants</div>
+          <div class="gap-status">⚠ At Risk</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">EDA grants under new admin policy — replacement strategy needed urgently</div>
+        </div>
+        <div class="gap-cell empty">
+          <div class="gap-icon">🎗</div>
+          <div class="gap-label">Major Foundations (National)</div>
+          <div class="gap-status">✗ Not Developed</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">Zero relationships with Packard, Moore, Walton, Bezos</div>
+        </div>
+        <div class="gap-cell empty">
+          <div class="gap-icon">👤</div>
+          <div class="gap-label">High-Net-Worth Individuals</div>
+          <div class="gap-status">✗ Not Developed</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">No major gift program. Maritime Forward campaign targets this — first time</div>
+        </div>
+        <div class="gap-cell partial">
+          <div class="gap-icon">🏠</div>
+          <div class="gap-label">Local/Regional Foundations</div>
+          <div class="gap-status">⚡ Just Started</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">Russell Family Foundation only (2024). Bullitt Foundation, others untapped.</div>
+        </div>
+        <div class="gap-cell empty">
+          <div class="gap-icon">🏢</div>
+          <div class="gap-label">Corporate Philanthropy</div>
+          <div class="gap-status">✗ Not Developed</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">Wärtsilä is a partner, not a donor. No corporate giving program.</div>
+        </div>
+        <div class="gap-cell empty">
+          <div class="gap-icon">🌊</div>
+          <div class="gap-label">Ocean-Specific Funders</div>
+          <div class="gap-status">✗ Not Developed</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">Schmidt Marine, Ocean Foundation, PROBLUE — zero engagement</div>
+        </div>
+        <div class="gap-cell partial">
+          <div class="gap-icon">⚡</div>
+          <div class="gap-label">Venture Capital / Impact</div>
+          <div class="gap-status">⚡ Partial</div>
+          <div style="font-size:11px; color:#607D8B; margin-top:6px;">Meliorate Partners engaged. Katapult Ocean, others not yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="icon">💰</span> Ocean Philanthropy Market Growth</div>
+        <div class="chart-wrap">
+          <canvas id="philoCtx"></canvas>
+        </div>
+        <div style="font-size:11px; color:#90A4AE; margin-top:6px;">
+          SOURCE: 2010 ($520M) and 2020 ($1.2B) anchored — Packard Foundation-funded ocean philanthropy study. Years 2011–2019 are trend interpolations. 2021–2024 extrapolated directionally. Not independently verified per year.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📊</span> Blue Economy VC Investment — Global ($B)</div>
+        <div class="chart-wrap">
+          <canvas id="vcCtx"></canvas>
+        </div>
+        <div style="font-size:11px; color:#90A4AE; margin-top:6px;">
+          * 2024: broad Blue Economy VC ($2.4B, JP Morgan). 2025: Bluetech + ocean observation only ($728M subset, BlueInvest). Different scopes — directional trend, not directly comparable.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 3: PROSPECTS ===== -->
+  <div class="section" id="prospects">
+
+    <div style="background:#E8F5E9; border-left:4px solid var(--safe-green); border-radius:10px; padding:14px 18px; margin-bottom:20px;">
+      <strong style="color:var(--safe-green); font-size:13px;">Strategic Framing</strong>
+      <p style="font-size:12px; color:#455A64; margin-top:4px; line-height:1.7;">These prospects are identified based on three matching criteria: (1) mission alignment with ocean/marine/blue economy innovation, (2) Pacific Northwest presence or explicit interest, and (3) evidence of funding organizations similar to Maritime Blue's model. All prospects have zero current relationship — representing greenfield cultivation opportunities.</p>
+    </div>
+
+    <!-- Tier 1 prospects -->
+    <div style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:12px; padding-left:4px;">
+      🥇 Tier 1 — High Priority (Mission + Scale + Geography Alignment)
+    </div>
+    <div class="prospect-grid">
+
+      <div class="prospect-card tier1">
+        <div class="p-header">
+          <div>
+            <div class="p-name">David & Lucile Packard Foundation</div>
+            <div class="p-hq">📍 Los Altos, CA · Ocean Initiative</div>
+          </div>
+          <span class="tier-badge">🥇 Tier 1</span>
+        </div>
+        <div class="p-amount">$480M <span style="font-size:14px; font-weight:400; color:#90A4AE;">5-year ocean commitment</span></div>
+        <div class="p-amount-label">~$40M/year in ocean grants · grant range varies — check packard.org/ocean for current LOI process</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ Ocean Innovation</span>
+          <span class="p-tag match">✓ Sustainable Fisheries</span>
+          <span class="p-tag match">✓ Climate + Ocean</span>
+          <span class="p-tag match">✓ Pacific Coast Focus</span>
+          <span class="p-tag">Seaweed/Aquaculture</span>
+          <span class="p-tag">Community Equity</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>92/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-gold" style="width:92%"></div></div>
+        </div>
+        <div class="p-notes">Their new ocean strategy explicitly funds "organizations that can unlock larger capital flows" — exact language matching Maritime Blue's catalytic model. Maritime Blue's Feb 2026 seaweed industry analysis directly aligns with Packard's sustainable aquaculture pillar. <strong>Entry point: Ocean Initiative team, via peer foundation referral from Russell Family Foundation.</strong></div>
+      </div>
+
+      <div class="prospect-card tier1">
+        <div class="p-header">
+          <div>
+            <div class="p-name">Gordon & Betty Moore Foundation</div>
+            <div class="p-hq">📍 Palo Alto, CA · Environmental Conservation</div>
+          </div>
+          <span class="tier-badge">🥇 Tier 1</span>
+        </div>
+        <div class="p-amount">$401.8M <span style="font-size:14px; font-weight:400; color:#90A4AE;">annual grants</span></div>
+        <div class="p-amount-label">$401.8M total annual (confirmed) · $18M Pacific region: per aggregated grant databases, verify directly with Moore Foundation · grant range: check moore.org/grants</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ Marine & Ocean Conservation</span>
+          <span class="p-tag match">✓ Pacific Northwest</span>
+          <span class="p-tag match">✓ Marine Biodiversity</span>
+          <span class="p-tag match">✓ Sustainable Fishing Tech</span>
+          <span class="p-tag">Science + Technology</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>89/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-gold" style="width:89%"></div></div>
+        </div>
+        <div class="p-notes">GBMF's Environmental Conservation program has an active Pacific Ocean focus (reported ~$18M to Pacific partnerships — verify directly with Moore Foundation). They fund innovation hubs and ecosystem builders — aligning with Maritime Blue's cluster model. UW Applied Physics Lab (Maritime Blue partner) has existing GBMF relationships. <strong>Entry point: via UW Applied Physics Lab relationship — warm pathway to Moore Foundation program officers.</strong></div>
+      </div>
+
+      <div class="prospect-card tier1">
+        <div class="p-header">
+          <div>
+            <div class="p-name">Bezos Earth Fund</div>
+            <div class="p-hq">📍 Washington, DC · Ocean + AI for Climate</div>
+          </div>
+          <span class="tier-badge">🥇 Tier 1</span>
+        </div>
+        <div class="p-amount">$10B <span style="font-size:14px; font-weight:400; color:#90A4AE;">committed by 2030</span></div>
+        <div class="p-amount-label">$37.5M Pacific ocean grant (2024) · $100M AI for Climate & Nature Grand Challenge (Phase I: $50K/grantee · Phase II: up to $2M/grantee)</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ Ocean Climate Action</span>
+          <span class="p-tag match">✓ AI + Climate Innovation</span>
+          <span class="p-tag match">✓ Pacific Ocean</span>
+          <span class="p-tag match">✓ Maritime Decarbonization</span>
+          <span class="p-tag">Blue Economy Startups</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>85/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-gold" style="width:85%"></div></div>
+        </div>
+        <div class="p-notes">$100M AI for Climate & Nature Grand Challenge (announced April 2024, Phase I awards May 2025): Phase I awards $50K to up to 30 grantees; Phase II awards up to $2M each to up to 15 grantees. HyperKelp (ocean data platform) and Atargis (wave energy) from Wave 4 are exactly the AI+climate solutions Bezos is funding. <strong>Entry: apply to Phase I of the AI Grand Challenge directly — Maritime Blue qualifies as a portfolio convener of AI-relevant ocean tech startups.</strong></div>
+      </div>
+
+      <div class="prospect-card tier1">
+        <div class="p-header">
+          <div>
+            <div class="p-name">Walton Family Foundation</div>
+            <div class="p-hq">📍 Bentonville, AR · Oceans Program</div>
+          </div>
+          <span class="tier-badge">🥇 Tier 1</span>
+        </div>
+        <div class="p-amount">$250M <span style="font-size:14px; font-weight:400; color:#90A4AE;">5-year ocean commitment</span></div>
+        <div class="p-amount-label">Focus: US Pacific Coast, sustainable fisheries, marine conservation</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ US Pacific Coast</span>
+          <span class="p-tag match">✓ Sustainable Fisheries</span>
+          <span class="p-tag match">✓ Ocean Conservation</span>
+          <span class="p-tag">Community Livelihoods</span>
+          <span class="p-tag">Innovation Programs</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>82/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-gold" style="width:82%"></div></div>
+        </div>
+        <div class="p-notes">WFF's ocean program explicitly covers the US Pacific Coast with a focus on sustainable fisheries — directly aligned with Maritime Blue's aquaculture and ocean conservation programs. Maritime Blue's Feb 2026 seaweed economic analysis (commissioned with Ocean Strategies) is exactly the kind of fisheries innovation WFF funds. <strong>Entry: via Board member Kristy Clement (CEO, Alaska Fisheries Development Foundation) who sits on Maritime Blue's Board — direct, warm pathway.</strong></div>
+      </div>
+    </div>
+
+    <!-- Tier 2 -->
+    <div style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:12px; padding-left:4px; margin-top:8px;">
+      🥈 Tier 2 — Strong Fit (Focused or Regional)
+    </div>
+    <div class="prospect-grid">
+
+      <div class="prospect-card tier2">
+        <div class="p-header">
+          <div>
+            <div class="p-name">Bullitt Foundation</div>
+            <div class="p-hq">📍 Seattle, WA · Pacific Northwest Climate</div>
+          </div>
+          <span class="tier-badge">🥈 Tier 2</span>
+        </div>
+        <div class="p-amount">Local <span style="font-size:14px; font-weight:400; color:#90A4AE;">PNW-focused philanthropy</span></div>
+        <div class="p-amount-label">Deepest-green funder in the Pacific Northwest · grant range: verify on bullitt.org</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ Seattle Based</span>
+          <span class="p-tag match">✓ Climate Action PNW</span>
+          <span class="p-tag match">✓ Ecological Health</span>
+          <span class="p-tag">Built Environment</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>78/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-blue" style="width:78%"></div></div>
+        </div>
+        <div class="p-notes">Seattle-headquartered, mission-aligned. MInC's Living Building Challenge certification is exactly the kind of bold sustainability statement Bullitt funds. <strong>Warm entry possible through WA state climate networks.</strong></div>
+      </div>
+
+      <div class="prospect-card tier2">
+        <div class="p-header">
+          <div>
+            <div class="p-name">Schmidt Marine Technology Partners</div>
+            <div class="p-hq">📍 Palo Alto, CA · Marine Technology</div>
+          </div>
+          <span class="tier-badge">🥈 Tier 2</span>
+        </div>
+        <div class="p-amount">$100K–$500K <span style="font-size:14px; font-weight:400; color:#90A4AE;">per grant/year · multi-year commitments</span></div>
+        <div class="p-amount-label">Program of The Schmidt Family Foundation ($1.8B assets) · ~$3–3.5M deployed per grant cycle · 60+ technologies funded to date</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ Marine Technology</span>
+          <span class="p-tag match">✓ Ocean Protection</span>
+          <span class="p-tag match">✓ Innovation Programs</span>
+          <span class="p-tag">Fisheries Science</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>74/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-blue" style="width:74%"></div></div>
+        </div>
+        <div class="p-notes">Eric Schmidt's marine-focused foundation directly funds innovative marine tech organizations. Perfect fit for the accelerator and MInC. Smaller grants but strong programmatic alignment with Blue Ventures portfolio.</div>
+      </div>
+
+      <div class="prospect-card tier2">
+        <div class="p-header">
+          <div>
+            <div class="p-name">Vulcan Inc. / Paul G. Allen Legacy</div>
+            <div class="p-hq">📍 Seattle, WA · Ocean Health (Allen legacy programs)</div>
+          </div>
+          <span class="tier-badge">🥈 Tier 2</span>
+        </div>
+        <div class="p-amount">Legacy programs <span style="font-size:14px; font-weight:400; color:#90A4AE;">continued via Vulcan Inc. post-2018</span></div>
+        <div class="p-amount-label">Coral Triangle Initiative, ocean health, Pacific conservation — verify current grant status via Vulcan Inc.</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ Seattle Heritage</span>
+          <span class="p-tag match">✓ Ocean Health</span>
+          <span class="p-tag match">✓ Tech + Ocean Crossover</span>
+          <span class="p-tag">Conservation Science</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>71/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-blue" style="width:71%"></div></div>
+        </div>
+        <div class="p-notes">Paul Allen (d. 2018) built strong ocean + tech philanthropy; programs continue via Vulcan Inc. Coral Triangle Initiative and ocean health work remain active. Verify current grantmaking capacity directly with Vulcan before outreach. Seattle roots and shared maritime/tech mission make this worth exploring.</div>
+      </div>
+
+      <div class="prospect-card tier2">
+        <div class="p-header">
+          <div>
+            <div class="p-name">ClimateWorks Foundation</div>
+            <div class="p-hq">📍 San Francisco, CA · Climate Solutions</div>
+          </div>
+          <span class="tier-badge">🥈 Tier 2</span>
+        </div>
+        <div class="p-amount">$40M <span style="font-size:14px; font-weight:400; color:#90A4AE;">MacKenzie Scott gift for zero-emission maritime</span></div>
+        <div class="p-amount-label">Maritime shipping decarbonization is a confirmed, named program area · zero-emission vessels by 2050 explicit target</div>
+        <div class="p-alignment">
+          <span class="p-tag match">✓ Maritime Decarbonization</span>
+          <span class="p-tag match">✓ Clean Shipping</span>
+          <span class="p-tag match">✓ Climate Innovation</span>
+          <span class="p-tag">Green Fuels</span>
+        </div>
+        <div class="priority-bar-wrap">
+          <div class="priority-label"><span>Priority Score</span><span>69/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-blue" style="width:69%"></div></div>
+        </div>
+        <div class="p-notes">Maritime Blue's Sustainable Maritime Fuels Collaborative (officially launched April 3, 2025 — with Port of Seattle, Port of Tacoma, NWSA, WA Commerce, CHARGE) is exactly the decarbonization work ClimateWorks funds. ClimateWorks received $40M from MacKenzie Scott specifically for zero-emission maritime. <strong>Entry: via the SMF Collaborative — Maritime Blue is already positioned in this space.</strong></div>
+      </div>
+    </div>
+
+    <!-- Tier 3 -->
+    <div style="font-size:13px; font-weight:700; color:var(--navy); margin-bottom:12px; padding-left:4px; margin-top:8px;">
+      🥉 Tier 3 — Cultivate Long-Term
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-bottom:20px;">
+      <div class="prospect-card tier3" style="padding:14px 16px;">
+        <div class="p-name" style="font-size:13px;">The Ocean Foundation</div>
+        <div class="p-hq">DC-based · Blue economy ecosystem</div>
+        <div class="priority-bar-wrap" style="margin-top:8px;">
+          <div class="priority-label"><span>Fit Score</span><span>65/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-teal" style="width:65%"></div></div>
+        </div>
+      </div>
+      <div class="prospect-card tier3" style="padding:14px 16px;">
+        <div class="p-name" style="font-size:13px;">Kauffman Foundation</div>
+        <div class="p-hq">Entrepreneurship + innovation ecosystems</div>
+        <div class="priority-bar-wrap" style="margin-top:8px;">
+          <div class="priority-label"><span>Fit Score</span><span>60/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-teal" style="width:60%"></div></div>
+        </div>
+      </div>
+      <div class="prospect-card tier3" style="padding:14px 16px;">
+        <div class="p-name" style="font-size:13px;">Katapult Ocean</div>
+        <div class="p-hq">Impact VC · Ocean tech startups</div>
+        <div class="priority-bar-wrap" style="margin-top:8px;">
+          <div class="priority-label"><span>Fit Score</span><span>63/100</span></div>
+          <div class="priority-bar-bg"><div class="priority-bar-fill bar-teal" style="width:63%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategic summary -->
+    <div class="card" style="background: linear-gradient(135deg, #0A2342, #1565C0); color:white;">
+      <div class="card-title" style="color:white; font-size:16px;"><span class="icon">🧭</span> Development Strategy: First 90 Days</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; font-size:13px;">
+        <div>
+          <div style="font-size:12px; opacity:0.7; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.8px;">Month 1: Foundation</div>
+          <div style="line-height:1.8; opacity:0.9;">
+            — Audit Bonterra CRM completeness<br>
+            — Map all warm introductions (Board → Packard/Moore/Walton)<br>
+            — Prioritize Russell Family Foundation renewal<br>
+            — Draft Maritime Forward campaign narrative
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px; opacity:0.7; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.8px;">Month 2: Outreach</div>
+          <div style="line-height:1.8; opacity:0.9;">
+            — Submit Packard Foundation LOI (Ocean Initiative)<br>
+            — Initiate Moore Foundation exploratory call via UW<br>
+            — Walton entry via Kristy Clement (Board)<br>
+            — Bezos AI Grand Challenge application
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px; opacity:0.7; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.8px;">Month 3: Campaign</div>
+          <div style="line-height:1.8; opacity:0.9;">
+            — Maritime Forward major gift kickoff events<br>
+            — Bullitt Foundation cultivation meeting<br>
+            — MInC site visits for top prospects<br>
+            — Corporate giving program with Wärtsilä, partners
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>Washington Maritime Blue — Funding Landscape & Impact Brief · March 2026 · Data: Inside Philanthropy, Foundation websites, BlueInvest 2024, WEF, JP Morgan Blue Tech Report</footer>
+
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['impact','landscape','prospects'].indexOf(id);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+}
+
+// Global blue economy context — only confirmed data points shown
+const globalCtx = document.getElementById('globalCtx').getContext('2d');
+new Chart(globalCtx, {
+  type: 'bar',
+  data: {
+    labels: ['2024 (Blue Economy\nVC broad)', '2025 (Bluetech +\nocean obs. only)'],
+    datasets: [{
+      label: 'Investment ($M)',
+      data: [2400, 728],
+      backgroundColor: ['#1565C0', '#00838F'],
+      borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toLocaleString()}M` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+      y: { grid: { color: '#ECEFF1' }, ticks: { font: { size: 10 }, callback: v => `$${v}M` } }
+    }
+  }
+});
+
+// Ocean philanthropy market
+const philoCtx = document.getElementById('philoCtx').getContext('2d');
+new Chart(philoCtx, {
+  type: 'line',
+  data: {
+    labels: ['2010', '2012', '2014', '2016', '2018', '2020', '2022', '2024'],
+    datasets: [{
+      label: 'Ocean Philanthropy ($/yr)',
+      data: [520, 620, 720, 850, 1000, 1200, 1350, 1500],
+      borderColor: '#1565C0', backgroundColor: 'rgba(21,101,192,0.1)',
+      fill: true, tension: 0.4, pointBackgroundColor: '#1565C0', pointRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` $${ctx.raw}M/year` } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      y: { grid: { color: '#ECEFF1' }, ticks: { font: { size: 10 }, callback: v => `$${v}M` } }
+    }
+  }
+});
+</script>
+</body>
+</html>

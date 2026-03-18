@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:maritimeblue.org)",
+      "WebFetch(domain:www.guidestar.org)",
+      "WebFetch(domain:trff.org)",
+      "Bash(gh auth:*)"
+    ]
+  }
+}
