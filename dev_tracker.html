@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maritime Blue — Development Tracker</title>
+<style>
+  :root {
+    --navy:       #0A2342;
+    --ocean:      #1565C0;
+    --teal:       #00838F;
+    --aqua:       #26C6DA;
+    --seafoam:    #B2EBF2;
+    --sand:       #F5F5F0;
+    --risk-red:   #C62828;
+    --risk-amber: #E65100;
+    --safe-green: #2E7D32;
+    --light-gray: #ECEFF1;
+    --mid-gray:   #90A4AE;
+    --white:      #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--sand); color: #263238; min-height: 100vh; }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--ocean) 100%);
+    color: white; padding: 20px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text h1 { font-size: 18px; font-weight: 700; letter-spacing: .3px; }
+  .logo-text p  { font-size: 11px; opacity: .7; margin-top: 1px; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .user-pill {
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+    border-radius: 20px; padding: 6px 14px; font-size: 12px; display: flex; align-items: center; gap: 7px;
+  }
+  .user-dot { width: 8px; height: 8px; border-radius: 50%; background: #69F0AE; }
+  .last-update { font-size: 11px; opacity: .6; }
+
+  /* ── NAV TABS ────────────────────────────────────────────── */
+  nav {
+    background: var(--white); border-bottom: 2px solid var(--light-gray);
+    padding: 0 36px; display: flex; gap: 4px;
+  }
+  .tab {
+    padding: 14px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+    border-bottom: 3px solid transparent; color: var(--mid-gray);
+    transition: color .2s, border-color .2s; white-space: nowrap;
+  }
+  .tab:hover { color: var(--ocean); }
+  .tab.active { color: var(--ocean); border-bottom-color: var(--ocean); }
+
+  /* ── LAYOUT ─────────────────────────────────────────────── */
+  .page { display: none; padding: 28px 36px; max-width: 1400px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ── BANNER CARDS ────────────────────────────────────────── */
+  .banner-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .banner {
+    background: var(--white); border-radius: 12px; padding: 18px 20px;
+    border-left: 4px solid var(--aqua); box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  }
+  .banner.red    { border-left-color: var(--risk-red); }
+  .banner.amber  { border-left-color: var(--risk-amber); }
+  .banner.green  { border-left-color: var(--safe-green); }
+  .banner.navy   { border-left-color: var(--navy); }
+  .banner-label  { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--mid-gray); margin-bottom: 6px; }
+  .banner-value  { font-size: 28px; font-weight: 800; color: var(--navy); line-height: 1; }
+  .banner-sub    { font-size: 11px; color: #607D8B; margin-top: 4px; }
+
+  /* ── SECTION HEADERS ─────────────────────────────────────── */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; margin-top: 32px;
+  }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--navy); }
+  .section-title span { font-weight: 400; color: var(--mid-gray); font-size: 12px; margin-left: 8px; }
+
+  /* ── SEARCH + FILTER BAR ─────────────────────────────────── */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .search-box {
+    flex: 1; min-width: 200px; padding: 9px 14px; border: 1px solid #CFD8DC;
+    border-radius: 8px; font-size: 13px; background: var(--white);
+    outline: none; transition: border-color .2s;
+  }
+  .search-box:focus { border-color: var(--ocean); }
+  .filter-btn {
+    padding: 8px 14px; border: 1px solid #CFD8DC; border-radius: 8px;
+    background: var(--white); font-size: 12px; cursor: pointer; color: #455A64;
+    transition: all .2s;
+  }
+  .filter-btn:hover, .filter-btn.on { background: var(--ocean); color: white; border-color: var(--ocean); }
+
+  /* ── PIPELINE BOARD ──────────────────────────────────────── */
+  .pipeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 32px; overflow-x: auto; }
+  .pipeline-col { min-width: 190px; }
+  .col-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px;
+    padding: 8px 12px; border-radius: 8px 8px 0 0; color: white; display: flex; align-items: center; justify-content: space-between;
+  }
+  .col-header .count { background: rgba(255,255,255,.25); border-radius: 10px; padding: 1px 7px; font-size: 10px; }
+  .col-body { background: #F0F4F8; border-radius: 0 0 8px 8px; padding: 10px; min-height: 120px; display: flex; flex-direction: column; gap: 8px; }
+
+  .col-prospect  .col-header { background: #546E7A; }
+  .col-research  .col-header { background: #1565C0; }
+  .col-cultivate .col-header { background: #00838F; }
+  .col-solicited .col-header { background: #E65100; }
+  .col-closed    .col-header { background: #2E7D32; }
+
+  .donor-card {
+    background: var(--white); border-radius: 8px; padding: 11px 13px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 3px solid var(--aqua);
+    cursor: pointer; transition: box-shadow .2s, transform .15s;
+  }
+  .donor-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.12); transform: translateY(-1px); }
+  .donor-card.foundation { border-left-color: #7B1FA2; }
+  .donor-card.government { border-left-color: #E65100; }
+  .donor-card.corporate  { border-left-color: #1565C0; }
+  .donor-card.individual { border-left-color: #2E7D32; }
+  .dc-name  { font-size: 12px; font-weight: 700; color: var(--navy); }
+  .dc-type  { font-size: 10px; color: var(--mid-gray); margin-top: 2px; }
+  .dc-ask   { font-size: 11px; font-weight: 600; color: var(--teal); margin-top: 5px; }
+  .dc-owner { font-size: 10px; color: #90A4AE; margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+  .owner-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--ocean); color: white; font-size: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .dc-flag  { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-top: 5px; font-weight: 600; }
+  .flag-urgent { background: #FFEBEE; color: var(--risk-red); }
+  .flag-warm   { background: #FFF3E0; color: var(--risk-amber); }
+  .flag-new    { background: #E8F5E9; color: var(--safe-green); }
+
+  /* ── TABLE ───────────────────────────────────────────────── */
+  .table-wrap { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { background: var(--navy); color: white; padding: 11px 14px; text-align: left; font-weight: 600; font-size: 11px; letter-spacing: .4px; white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid #ECEFF1; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F8FBFF; }
+  .pill {
+    display: inline-block; padding: 3px 9px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+  }
+  .pill-foundation { background: #EDE7F6; color: #512DA8; }
+  .pill-government { background: #FFF3E0; color: #E65100; }
+  .pill-corporate  { background: #E3F2FD; color: #1565C0; }
+  .pill-individual { background: #E8F5E9; color: #2E7D32; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .s-active   { background: #2E7D32; }
+  .s-prospect { background: #1565C0; }
+  .s-atrisk   { background: var(--risk-red); }
+  .s-closed   { background: #546E7A; }
+  .due-soon { color: var(--risk-red); font-weight: 700; }
+  .due-ok   { color: var(--safe-green); }
+
+  /* ── GRANTS CALENDAR ─────────────────────────────────────── */
+  .calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .grant-card {
+    background: var(--white); border-radius: 12px; padding: 18px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.06); border-top: 3px solid var(--ocean);
+    transition: box-shadow .2s;
+  }
+  .grant-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.1); }
+  .grant-card.urgent { border-top-color: var(--risk-red); }
+  .grant-card.amber  { border-top-color: var(--risk-amber); }
+  .grant-card.done   { border-top-color: var(--safe-green); opacity: .75; }
+  .gc-funder  { font-size: 13px; font-weight: 700; color: var(--navy); }
+  .gc-purpose { font-size: 11px; color: #607D8B; margin-top: 3px; }
+  .gc-meta    { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .gc-date    { font-size: 12px; font-weight: 600; }
+  .gc-days    { font-size: 11px; padding: 3px 9px; border-radius: 10px; font-weight: 700; }
+  .days-urgent { background: #FFEBEE; color: var(--risk-red); }
+  .days-warn   { background: #FFF3E0; color: var(--risk-amber); }
+  .days-ok     { background: #E8F5E9; color: var(--safe-green); }
+  .days-done   { background: #ECEFF1; color: #546E7A; }
+  .gc-owner-bar { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; color: #90A4AE; }
+  .gc-progress { margin-top: 10px; }
+  .gc-progress-label { font-size: 10px; color: var(--mid-gray); display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .progress-bar-bg { background: var(--light-gray); border-radius: 4px; height: 5px; }
+  .progress-bar-fill { height: 5px; border-radius: 4px; background: var(--ocean); }
+
+  /* ── ACTIONS TABLE ───────────────────────────────────────── */
+  .action-item {
+    background: var(--white); border-radius: 10px; padding: 14px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06); display: flex; align-items: flex-start;
+    gap: 14px; border-left: 3px solid var(--aqua); margin-bottom: 10px;
+    transition: box-shadow .2s;
+  }
+  .action-item:hover { box-shadow: 0 3px 10px rgba(0,0,0,.1); }
+  .action-item.urgent { border-left-color: var(--risk-red); }
+  .action-item.amber  { border-left-color: var(--risk-amber); }
+  .action-check { width: 18px; height: 18px; border-radius: 4px; border: 2px solid #CFD8DC; cursor: pointer; flex-shrink: 0; margin-top: 2px; transition: background .2s, border-color .2s; }
+  .action-check.done  { background: var(--safe-green); border-color: var(--safe-green); }
+  .action-body { flex: 1; }
+  .action-title { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .action-desc  { font-size: 11px; color: #607D8B; margin-top: 2px; }
+  .action-meta  { display: flex; gap: 10px; margin-top: 7px; flex-wrap: wrap; }
+  .action-tag   { font-size: 10px; padding: 2px 7px; border-radius: 6px; background: var(--light-gray); color: #546E7A; font-weight: 600; }
+  .action-due   { font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; }
+  .due-red  { background: #FFEBEE; color: var(--risk-red); }
+  .due-ora  { background: #FFF3E0; color: var(--risk-amber); }
+  .due-grn  { background: #E8F5E9; color: var(--safe-green); }
+
+  /* ── MODAL ───────────────────────────────────────────────── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,35,66,.5); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white); border-radius: 16px; padding: 28px; max-width: 520px; width: 90%;
+    box-shadow: 0 8px 40px rgba(0,0,0,.2); max-height: 85vh; overflow-y: auto;
+  }
+  .modal h2 { font-size: 17px; color: var(--navy); margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: var(--mid-gray); margin-bottom: 18px; }
+  .modal-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .modal-field { flex: 1; }
+  .modal-label { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: var(--mid-gray); margin-bottom: 4px; }
+  .modal-val   { font-size: 13px; color: #263238; font-weight: 500; }
+  .modal-note  { background: var(--light-gray); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #455A64; line-height: 1.6; margin-top: 12px; }
+  .modal-close { position: absolute; top: 16px; right: 20px; font-size: 20px; cursor: pointer; color: var(--mid-gray); background: none; border: none; }
+  .modal-footer { display: flex; gap: 10px; margin-top: 18px; }
+  .btn { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--ocean); color: white; }
+  .btn-outline { background: transparent; color: var(--ocean); border: 1.5px solid var(--ocean); }
+
+  /* ── CAMPAIGN PROGRESS ───────────────────────────────────── */
+  .campaign-box {
+    background: linear-gradient(135deg, var(--navy) 0%, #0D47A1 100%);
+    color: white; border-radius: 16px; padding: 24px 28px; margin-bottom: 28px;
+    display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;
+  }
+  .camp-title { font-size: 13px; opacity: .75; margin-bottom: 6px; }
+  .camp-value { font-size: 36px; font-weight: 800; }
+  .camp-sub   { font-size: 12px; opacity: .7; margin-top: 4px; }
+  .camp-bar-wrap { margin-top: 14px; }
+  .camp-bar-label { font-size: 11px; opacity: .75; display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .camp-bar-bg   { background: rgba(255,255,255,.2); border-radius: 6px; height: 10px; }
+  .camp-bar-fill { background: var(--aqua); border-radius: 6px; height: 10px; }
+  .camp-stats { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+  .camp-stat  { text-align: right; }
+  .camp-stat-v { font-size: 22px; font-weight: 800; color: var(--aqua); }
+  .camp-stat-l { font-size: 10px; opacity: .65; }
+
+  /* ── TEAM MEMBERS ────────────────────────────────────────── */
+  .team-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .team-chip {
+    display: flex; align-items: center; gap: 7px; padding: 7px 13px;
+    border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 2px solid transparent; transition: all .2s;
+  }
+  .team-chip.active { border-color: var(--ocean); background: #E3F2FD; color: var(--ocean); }
+  .team-chip:not(.active) { background: var(--white); color: #455A64; border-color: #CFD8DC; }
+  .team-avatar { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: white; }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    header { padding: 16px 18px; }
+    .page  { padding: 18px; }
+    nav    { padding: 0 18px; overflow-x: auto; }
+    .pipeline { grid-template-columns: repeat(5, 190px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ HEADER ══════════════════════════════════ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌊</div>
+    <div class="logo-text">
+      <h1>Maritime Blue — Development Tracker</h1>
+      <p>Internal tool · Development Team · Prototype v0.1</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="user-pill">
+      <div class="user-dot"></div>
+      Development Manager
+    </div>
+    <div class="last-update">Last sync: today, 9:14 AM</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════ NAV ═════════════════════════════════════ -->
+<nav>
+  <div class="tab active" onclick="switchTab('pipeline')">🎯 Pipeline</div>
+  <div class="tab" onclick="switchTab('grants')">📋 Grant Calendar</div>
+  <div class="tab" onclick="switchTab('actions')">✅ Next Actions</div>
+  <div class="tab" onclick="switchTab('registry')">📂 Funder Registry</div>
+</nav>
+
+<!-- ═══════════════════════════════════ PAGE: PIPELINE ══════════════════════════ -->
+<div id="page-pipeline" class="page active">
+
+  <!-- Campaign progress banner -->
+  <div class="campaign-box">
+    <div>
+      <div class="camp-title">Maritime Forward Campaign — Capital Goal</div>
+      <div class="camp-value">$2M raised</div>
+      <div class="camp-sub">of $4M capital target · $10M total campaign</div>
+      <div class="camp-bar-wrap">
+        <div class="camp-bar-label"><span>$0</span><span>50% complete</span><span>$4M goal</span></div>
+        <div class="camp-bar-bg"><div class="camp-bar-fill" style="width:50%"></div></div>
+      </div>
+    </div>
+    <div class="camp-stats">
+      <div class="camp-stat">
+        <div class="camp-stat-v">$2M</div>
+        <div class="camp-stat-l">still needed</div>
+      </div>
+      <div class="camp-stat">
+        <div class="camp-stat-v">8</div>
+        <div class="camp-stat-l">active prospects</div>
+      </div>
+      <div class="camp-stat">
+        <div class="camp-stat-v">Summer '26</div>
+        <div class="camp-stat-l">MInC opening</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI banners -->
+  <div class="banner-grid">
+    <div class="banner green">
+      <div class="banner-label">Active Funders</div>
+      <div class="banner-value">7</div>
+      <div class="banner-sub">Confirmed multi-year relationships</div>
+    </div>
+    <div class="banner amber">
+      <div class="banner-label">In Cultivation</div>
+      <div class="banner-value">5</div>
+      <div class="banner-sub">Foundations + 1 corporate prospect</div>
+    </div>
+    <div class="banner red">
+      <div class="banner-label">Federal At Risk</div>
+      <div class="banner-value">$1.6M+</div>
+      <div class="banner-sub">EDA + BBB · Policy shift exposure</div>
+    </div>
+    <div class="banner navy">
+      <div class="banner-label">Proposals Pending</div>
+      <div class="banner-value">3</div>
+      <div class="banner-sub">Decision expected Q2–Q3 2026</div>
+    </div>
+  </div>
+
+  <!-- Pipeline board -->
+  <div class="section-header">
+    <div class="section-title">Moves Management Pipeline <span>drag to update stage · click card for details</span></div>
+    <div class="filter-bar" style="margin:0">
+      <button class="filter-btn on" onclick="toggleFilter(this,'all')">All</button>
+      <button class="filter-btn" onclick="toggleFilter(this,'foundation')">Foundations</button>
+      <button class="filter-btn" onclick="toggleFilter(this,'government')">Government</button>
+      <button class="filter-btn" onclick="toggleFilter(this,'corporate')">Corporate</button>
+    </div>
+  </div>
+
+  <div class="pipeline">
+    <!-- PROSPECT -->
+    <div class="pipeline-col col-prospect">
+      <div class="col-header">Prospect <span class="count">3</span></div>
+      <div class="col-body">
+        <div class="donor-card foundation" onclick="openModal('packard')">
+          <div class="dc-name">Packard Foundation</div>
+          <div class="dc-type">Foundation · Ocean Program</div>
+          <div class="dc-ask">Ask: $250K–$500K</div>
+          <div class="dc-owner"><div class="owner-dot">D</div> Daniel Pulse</div>
+          <span class="dc-flag flag-new">NEW</span>
+        </div>
+        <div class="donor-card foundation" onclick="openModal('moore')">
+          <div class="dc-name">Moore Foundation</div>
+          <div class="dc-type">Foundation · Marine Ecosystems</div>
+          <div class="dc-ask">Ask: TBD</div>
+          <div class="dc-owner"><div class="owner-dot">J</div> Joshua Berger</div>
+          <span class="dc-flag flag-new">NEW</span>
+        </div>
+        <div class="donor-card corporate" onclick="openModal('amazon')">
+          <div class="dc-name">Amazon — Climate Pledge</div>
+          <div class="dc-type">Corporate · Climate Fund</div>
+          <div class="dc-ask">Ask: $100K+</div>
+          <div class="dc-owner"><div class="owner-dot">I</div> Ilaria Reale</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESEARCH -->
+    <div class="pipeline-col col-research">
+      <div class="col-header">Research <span class="count">2</span></div>
+      <div class="col-body">
+        <div class="donor-card foundation" onclick="openModal('bezos')">
+          <div class="dc-name">Bezos Earth Fund</div>
+          <div class="dc-type">Foundation · AI for Climate</div>
+          <div class="dc-ask">Ask: $100K–$2M</div>
+          <div class="dc-owner"><div class="owner-dot">I</div> Ilaria Reale</div>
+          <span class="dc-flag flag-warm">OPEN RFP</span>
+        </div>
+        <div class="donor-card foundation" onclick="openModal('walton')">
+          <div class="dc-name">Walton Family Foundation</div>
+          <div class="dc-type">Foundation · Ocean Initiative</div>
+          <div class="dc-ask">Ask: TBD</div>
+          <div class="dc-owner"><div class="owner-dot">D</div> Daniel Pulse</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CULTIVATE -->
+    <div class="pipeline-col col-cultivate">
+      <div class="col-header">Cultivate <span class="count">3</span></div>
+      <div class="col-body">
+        <div class="donor-card foundation" onclick="openModal('bullitt')">
+          <div class="dc-name">Bullitt Foundation</div>
+          <div class="dc-type">Foundation · Pacific NW</div>
+          <div class="dc-ask">Ask: $100K–$500K</div>
+          <div class="dc-owner"><div class="owner-dot">J</div> Joshua Berger</div>
+          <span class="dc-flag flag-warm">WARM</span>
+        </div>
+        <div class="donor-card foundation" onclick="openModal('schmidt')">
+          <div class="dc-name">Schmidt Marine Tech.</div>
+          <div class="dc-type">Foundation · Marine Tech</div>
+          <div class="dc-ask">Ask: $100K–$500K</div>
+          <div class="dc-owner"><div class="owner-dot">I</div> Ilaria Reale</div>
+        </div>
+        <div class="donor-card government" onclick="openModal('port')">
+          <div class="dc-name">Port of Seattle</div>
+          <div class="dc-type">Government · Anchor Partner</div>
+          <div class="dc-ask">Renewal: $150K/yr</div>
+          <div class="dc-owner"><div class="owner-dot">J</div> Joshua Berger</div>
+          <span class="dc-flag flag-warm">RENEWAL DUE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOLICITED -->
+    <div class="pipeline-col col-solicited">
+      <div class="col-header">Solicited <span class="count">2</span></div>
+      <div class="col-body">
+        <div class="donor-card foundation" onclick="openModal('climateworks')">
+          <div class="dc-name">ClimateWorks Foundation</div>
+          <div class="dc-type">Foundation · Zero-Emission Maritime</div>
+          <div class="dc-ask">Ask: $200K</div>
+          <div class="dc-owner"><div class="owner-dot">D</div> Daniel Pulse</div>
+          <span class="dc-flag flag-urgent">DECISION PENDING</span>
+        </div>
+        <div class="donor-card government" onclick="openModal('commerce')">
+          <div class="dc-name">WA Dept. of Commerce</div>
+          <div class="dc-type">State Government</div>
+          <div class="dc-ask">Renewal: $200K+</div>
+          <div class="dc-owner"><div class="owner-dot">D</div> Daniel Pulse</div>
+          <span class="dc-flag flag-urgent">REPORT DUE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLOSED/ACTIVE -->
+    <div class="pipeline-col col-closed">
+      <div class="col-header">Active ✓ <span class="count">3</span></div>
+      <div class="col-body">
+        <div class="donor-card government">
+          <div class="dc-name">Port of Seattle</div>
+          <div class="dc-type">Government · MInC</div>
+          <div class="dc-ask">$150K/yr confirmed</div>
+          <div class="dc-owner"><div class="owner-dot">J</div> Joshua Berger</div>
+          <span class="dc-flag flag-new">ACTIVE</span>
+        </div>
+        <div class="donor-card foundation">
+          <div class="dc-name">Russell Family Foundation</div>
+          <div class="dc-type">Foundation · Local</div>
+          <div class="dc-ask">$50K · Jan 2024</div>
+          <div class="dc-owner"><div class="owner-dot">D</div> Daniel Pulse</div>
+        </div>
+        <div class="donor-card government">
+          <div class="dc-name">City of Tacoma</div>
+          <div class="dc-type">Government · Matching</div>
+          <div class="dc-ask">$600K matching grant</div>
+          <div class="dc-owner"><div class="owner-dot">D</div> Daniel Pulse</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: GRANTS ════════════════════════════ -->
+<div id="page-grants" class="page">
+  <div class="banner-grid">
+    <div class="banner red">
+      <div class="banner-label">Due within 30 days</div>
+      <div class="banner-value">2</div>
+      <div class="banner-sub">Immediate action required</div>
+    </div>
+    <div class="banner amber">
+      <div class="banner-label">Due within 90 days</div>
+      <div class="banner-value">3</div>
+      <div class="banner-sub">Preparation in progress</div>
+    </div>
+    <div class="banner green">
+      <div class="banner-label">Submitted / Under Review</div>
+      <div class="banner-value">2</div>
+      <div class="banner-sub">Awaiting funder decision</div>
+    </div>
+    <div class="banner navy">
+      <div class="banner-label">Open RFPs to explore</div>
+      <div class="banner-value">4</div>
+      <div class="banner-sub">Alignment check needed</div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:8px">
+    <div class="section-title">Grant Deadline Calendar <span>sorted by urgency</span></div>
+  </div>
+
+  <div class="calendar-grid">
+    <div class="grant-card urgent">
+      <div class="gc-funder">WA Dept. of Commerce</div>
+      <div class="gc-purpose">Stewardship report — Annual grant renewal</div>
+      <div class="gc-meta">
+        <div class="gc-date due-soon">📅 April 15, 2026</div>
+        <div class="gc-days days-urgent">8 days</div>
+      </div>
+      <div class="gc-owner-bar">👤 Owner: Daniel Pulse &nbsp;·&nbsp; 🏷 $200K renewal</div>
+      <div class="gc-progress">
+        <div class="gc-progress-label"><span>Report progress</span><span>60%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:60%; background:var(--risk-red)"></div></div>
+      </div>
+    </div>
+
+    <div class="grant-card urgent">
+      <div class="gc-funder">Port of Seattle</div>
+      <div class="gc-purpose">Annual stewardship + impact report</div>
+      <div class="gc-meta">
+        <div class="gc-date due-soon">📅 April 30, 2026</div>
+        <div class="gc-days days-urgent">23 days</div>
+      </div>
+      <div class="gc-owner-bar">👤 Owner: Joshua Berger &nbsp;·&nbsp; 🏷 $150K/yr</div>
+      <div class="gc-progress">
+        <div class="gc-progress-label"><span>Report progress</span><span>30%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:30%; background:var(--risk-red)"></div></div>
+      </div>
+    </div>
+
+    <div class="grant-card amber">
+      <div class="gc-funder">Bezos Earth Fund</div>
+      <div class="gc-purpose">AI for Climate & Nature — LOI submission</div>
+      <div class="gc-meta">
+        <div class="gc-date">📅 May 30, 2026</div>
+        <div class="gc-days days-warn">53 days</div>
+      </div>
+      <div class="gc-owner-bar">👤 Owner: Ilaria Reale &nbsp;·&nbsp; 🏷 Phase I: $50K → up to $2M</div>
+      <div class="gc-progress">
+        <div class="gc-progress-label"><span>LOI draft</span><span>10%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:10%; background:var(--risk-amber)"></div></div>
+      </div>
+    </div>
+
+    <div class="grant-card amber">
+      <div class="gc-funder">Bullitt Foundation</div>
+      <div class="gc-purpose">Pacific NW climate innovation — new proposal</div>
+      <div class="gc-meta">
+        <div class="gc-date">📅 June 15, 2026</div>
+        <div class="gc-days days-warn">69 days</div>
+      </div>
+      <div class="gc-owner-bar">👤 Owner: Joshua Berger &nbsp;·&nbsp; 🏷 Verify range at bullitt.org</div>
+      <div class="gc-progress">
+        <div class="gc-progress-label"><span>Proposal draft</span><span>0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="grant-card">
+      <div class="gc-funder">Packard Foundation</div>
+      <div class="gc-purpose">Ocean Program — first contact + LOI</div>
+      <div class="gc-meta">
+        <div class="gc-date">📅 Q3 2026</div>
+        <div class="gc-days days-ok">~90+ days</div>
+      </div>
+      <div class="gc-owner-bar">👤 Owner: Daniel Pulse &nbsp;·&nbsp; 🏷 Verify range at packard.org</div>
+      <div class="gc-progress">
+        <div class="gc-progress-label"><span>Research</span><span>40%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:40%; background:var(--safe-green)"></div></div>
+      </div>
+    </div>
+
+    <div class="grant-card done">
+      <div class="gc-funder">ClimateWorks Foundation</div>
+      <div class="gc-purpose">Zero-emission maritime — proposal submitted</div>
+      <div class="gc-meta">
+        <div class="gc-date">📅 Submitted Mar 2026</div>
+        <div class="gc-days days-done">Under review</div>
+      </div>
+      <div class="gc-owner-bar">👤 Owner: Daniel Pulse &nbsp;·&nbsp; 🏷 $200K ask</div>
+      <div class="gc-progress">
+        <div class="gc-progress-label"><span>Submitted</span><span>100%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:100%; background:var(--safe-green)"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: ACTIONS ═══════════════════════════ -->
+<div id="page-actions" class="page">
+  <div class="banner-grid">
+    <div class="banner red">
+      <div class="banner-label">Overdue / This week</div>
+      <div class="banner-value">3</div>
+      <div class="banner-sub">Needs immediate attention</div>
+    </div>
+    <div class="banner amber">
+      <div class="banner-label">Due next 2 weeks</div>
+      <div class="banner-value">4</div>
+      <div class="banner-sub">On track</div>
+    </div>
+    <div class="banner green">
+      <div class="banner-label">Completed this month</div>
+      <div class="banner-value">6</div>
+      <div class="banner-sub">Great progress</div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:8px">
+    <div class="section-title">Team Next Actions <span>click checkbox to mark complete</span></div>
+  </div>
+
+  <div class="team-row">
+    <div class="team-chip active" onclick="filterTeam(this,'all')">
+      <div class="team-avatar" style="background:#546E7A">All</div> All Team
+    </div>
+    <div class="team-chip" onclick="filterTeam(this,'JP')">
+      <div class="team-avatar" style="background:#0A2342">J</div> Joshua Berger
+    </div>
+    <div class="team-chip" onclick="filterTeam(this,'DP')">
+      <div class="team-avatar" style="background:#1565C0">D</div> Daniel Pulse
+    </div>
+    <div class="team-chip" onclick="filterTeam(this,'DT')">
+      <div class="team-avatar" style="background:#00838F">DT</div> Devon Thorsell
+    </div>
+    <div class="team-chip" onclick="filterTeam(this,'IR')">
+      <div class="team-avatar" style="background:#7B1FA2">I</div> Ilaria Reale
+    </div>
+  </div>
+
+  <div id="actions-list">
+    <div class="action-item urgent" data-owner="DP">
+      <div class="action-check" onclick="toggleCheck(this)"></div>
+      <div class="action-body">
+        <div class="action-title">Complete WA Commerce stewardship report</div>
+        <div class="action-desc">Annual report due April 15 — impact metrics, financial summary, program update. Renews $200K grant.</div>
+        <div class="action-meta">
+          <span class="action-tag">Daniel Pulse</span>
+          <span class="action-tag">WA Commerce</span>
+          <span class="action-due due-red">⏰ Due Apr 15</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item urgent" data-owner="JP">
+      <div class="action-check" onclick="toggleCheck(this)"></div>
+      <div class="action-body">
+        <div class="action-title">Port of Seattle — schedule stewardship meeting</div>
+        <div class="action-desc">Annual check-in with Port liaison before impact report deadline. Renewal of $150K/yr anchor partnership.</div>
+        <div class="action-meta">
+          <span class="action-tag">Joshua Berger</span>
+          <span class="action-tag">Port of Seattle</span>
+          <span class="action-due due-red">⏰ Due Apr 20</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item urgent" data-owner="IR">
+      <div class="action-check" onclick="toggleCheck(this)"></div>
+      <div class="action-body">
+        <div class="action-title">Enter all donor interactions into Bonterra</div>
+        <div class="action-desc">Q1 2026 touches not yet logged — Port of Seattle meeting notes, Russell follow-up, City of Tacoma update.</div>
+        <div class="action-meta">
+          <span class="action-tag">Ilaria Reale</span>
+          <span class="action-tag">Bonterra CRM</span>
+          <span class="action-due due-red">⏰ Overdue</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item amber" data-owner="IR">
+      <div class="action-check" onclick="toggleCheck(this)"></div>
+      <div class="action-body">
+        <div class="action-title">Draft Bezos Earth Fund LOI</div>
+        <div class="action-desc">AI for Climate & Nature Grand Challenge — Phase I Letter of Intent. Deadline May 30. Align with SMF Collaborative (launched April 3, 2025).</div>
+        <div class="action-meta">
+          <span class="action-tag">Ilaria Reale</span>
+          <span class="action-tag">Bezos Earth Fund</span>
+          <span class="action-due due-ora">📅 Due May 30</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item amber" data-owner="JP">
+      <div class="action-check" onclick="toggleCheck(this)"></div>
+      <div class="action-body">
+        <div class="action-title">Bullitt Foundation — intro call with program officer</div>
+        <div class="action-desc">Warm lead via Pacific NW network. Joshua to initiate first call; Ilaria to prep briefing doc and talking points.</div>
+        <div class="action-meta">
+          <span class="action-tag">Joshua Berger</span>
+          <span class="action-tag">Bullitt Foundation</span>
+          <span class="action-due due-ora">📅 Before May 15</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item amber" data-owner="DP">
+      <div class="action-check" onclick="toggleCheck(this)"></div>
+      <div class="action-body">
+        <div class="action-title">ClimateWorks — follow up on submitted proposal</div>
+        <div class="action-desc">Proposal submitted March 2026. Check decision timeline; send brief impact update to keep warm.</div>
+        <div class="action-meta">
+          <span class="action-tag">Daniel Pulse</span>
+          <span class="action-tag">ClimateWorks</span>
+          <span class="action-due due-ora">📅 Apr 25</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-item" data-owner="DT">
+      <div class="action-check" onclick="toggleCheck(this)"></div>
+      <div class="action-body">
+        <div class="action-title">Development Manager onboarding — Bonterra access + SOPs</div>
+        <div class="action-desc">Set up Bonterra credentials, share donor database SOPs, schedule intro meetings with program directors.</div>
+        <div class="action-meta">
+          <span class="action-tag">Devon Thorsell</span>
+          <span class="action-tag">Onboarding</span>
+          <span class="action-due due-grn">📅 May 2026</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ PAGE: REGISTRY ══════════════════════════ -->
+<div id="page-registry" class="page">
+  <div class="filter-bar">
+    <input class="search-box" type="text" placeholder="🔍  Search funders, programs, contacts…" oninput="filterRegistry(this.value)">
+    <button class="filter-btn on" onclick="toggleFilter(this,'all-r')">All</button>
+    <button class="filter-btn" onclick="toggleFilter(this,'foundation-r')">Foundations</button>
+    <button class="filter-btn" onclick="toggleFilter(this,'government-r')">Government</button>
+    <button class="filter-btn" onclick="toggleFilter(this,'corporate-r')">Corporate</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="registry-table">
+      <thead>
+        <tr>
+          <th>Funder</th>
+          <th>Type</th>
+          <th>Focus Area</th>
+          <th>Ask / Grant Range</th>
+          <th>Last Touch</th>
+          <th>Next Action</th>
+          <th>Owner</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Port of Seattle</strong></td>
+          <td><span class="pill pill-government">Government</span></td>
+          <td>Maritime innovation, MInC anchor</td>
+          <td>$150K/yr</td>
+          <td>Feb 2026</td>
+          <td>Impact report — Apr 30</td>
+          <td>Joshua Berger</td>
+          <td><span class="status-dot s-active"></span>Active</td>
+        </tr>
+        <tr>
+          <td><strong>WA Dept. of Commerce</strong></td>
+          <td><span class="pill pill-government">Government</span></td>
+          <td>Blue economy, workforce dev.</td>
+          <td>$200K+/yr</td>
+          <td>Jan 2026</td>
+          <td>Stewardship report — Apr 15</td>
+          <td>Daniel Pulse</td>
+          <td><span class="status-dot s-atrisk"></span><span class="due-soon">Report overdue</span></td>
+        </tr>
+        <tr>
+          <td><strong>U.S. EDA</strong></td>
+          <td><span class="pill pill-government">Government</span></td>
+          <td>Build to Scale + BBB planning</td>
+          <td>$1.6M+ (historical)</td>
+          <td>2022–2023</td>
+          <td>Monitor policy changes</td>
+          <td>Daniel Pulse</td>
+          <td><span class="status-dot s-atrisk"></span>At Risk</td>
+        </tr>
+        <tr>
+          <td><strong>City of Tacoma</strong></td>
+          <td><span class="pill pill-government">Government</span></td>
+          <td>Maritime innovation, matching</td>
+          <td>$600K (matching)</td>
+          <td>2023</td>
+          <td>Re-engage for MInC expansion</td>
+          <td>Daniel Pulse</td>
+          <td><span class="status-dot s-active"></span>Active</td>
+        </tr>
+        <tr>
+          <td><strong>Russell Family Foundation</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Pacific NW environment</td>
+          <td>$50K (2024)</td>
+          <td>Jan 2024</td>
+          <td>Stewardship touch — Q2 2026</td>
+          <td>Daniel Pulse</td>
+          <td><span class="status-dot s-active"></span>Active</td>
+        </tr>
+        <tr>
+          <td><strong>ClimateWorks Foundation</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Zero-emission maritime</td>
+          <td>$200K ask (pending)</td>
+          <td>Mar 2026</td>
+          <td>Follow up decision — Apr 25</td>
+          <td>Daniel Pulse</td>
+          <td><span class="status-dot s-prospect"></span>Solicited</td>
+        </tr>
+        <tr>
+          <td><strong>Bullitt Foundation</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Pacific NW sustainability</td>
+          <td>Verify at bullitt.org</td>
+          <td>—</td>
+          <td>Intro call — May 2026</td>
+          <td>Joshua Berger</td>
+          <td><span class="status-dot s-prospect"></span>Cultivate</td>
+        </tr>
+        <tr>
+          <td><strong>Schmidt Marine Technology</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Marine tech innovation</td>
+          <td>$100K–$500K/yr</td>
+          <td>—</td>
+          <td>Research + LOI prep</td>
+          <td>Ilaria Reale</td>
+          <td><span class="status-dot s-prospect"></span>Research</td>
+        </tr>
+        <tr>
+          <td><strong>Bezos Earth Fund</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>AI for Climate & Nature</td>
+          <td>Phase I $50K → up to $2M</td>
+          <td>—</td>
+          <td>LOI deadline May 30</td>
+          <td>Ilaria Reale</td>
+          <td><span class="status-dot s-prospect"></span>Research</td>
+        </tr>
+        <tr>
+          <td><strong>Packard Foundation</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Ocean conservation</td>
+          <td>Verify at packard.org/ocean</td>
+          <td>—</td>
+          <td>First contact — Q3 2026</td>
+          <td>Daniel Pulse</td>
+          <td><span class="status-dot s-prospect"></span>Prospect</td>
+        </tr>
+        <tr>
+          <td><strong>Moore Foundation</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Marine ecosystems</td>
+          <td>TBD — verify directly</td>
+          <td>—</td>
+          <td>Research alignment</td>
+          <td>Joshua Berger</td>
+          <td><span class="status-dot s-prospect"></span>Prospect</td>
+        </tr>
+        <tr>
+          <td><strong>Walton Family Foundation</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Ocean health, fisheries</td>
+          <td>TBD</td>
+          <td>—</td>
+          <td>Research + alignment check</td>
+          <td>Daniel Pulse</td>
+          <td><span class="status-dot s-prospect"></span>Research</td>
+        </tr>
+        <tr>
+          <td><strong>Amazon — Climate Pledge Fund</strong></td>
+          <td><span class="pill pill-corporate">Corporate</span></td>
+          <td>Climate solutions, Pacific NW</td>
+          <td>$100K+ (exploratory)</td>
+          <td>—</td>
+          <td>Research eligibility criteria</td>
+          <td>Ilaria Reale</td>
+          <td><span class="status-dot s-prospect"></span>Prospect</td>
+        </tr>
+        <tr>
+          <td><strong>Vulcan Inc. (Allen legacy)</strong></td>
+          <td><span class="pill pill-foundation">Foundation</span></td>
+          <td>Ocean health, conservation</td>
+          <td>TBD</td>
+          <td>—</td>
+          <td>Research current programs</td>
+          <td>Ilaria Reale</td>
+          <td><span class="status-dot s-prospect"></span>Prospect</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ MODAL ════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modal-title">Funder Name</h2>
+    <div class="modal-sub" id="modal-sub">Foundation · Ocean Program</div>
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-label">Stage</div><div class="modal-val" id="modal-stage">—</div></div>
+      <div class="modal-field"><div class="modal-label">Ask / Range</div><div class="modal-val" id="modal-ask">—</div></div>
+      <div class="modal-field"><div class="modal-label">Owner</div><div class="modal-val" id="modal-owner">—</div></div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-label">Last Touch</div><div class="modal-val" id="modal-touch">—</div></div>
+      <div class="modal-field"><div class="modal-label">Next Deadline</div><div class="modal-val" id="modal-deadline">—</div></div>
+    </div>
+    <div class="modal-note" id="modal-note">—</div>
+    <div class="modal-footer">
+      <button class="btn btn-primary">Log interaction in Bonterra</button>
+      <button class="btn btn-outline" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ SCRIPTS ══════════════════════════════════ -->
+<script>
+  // ── TAB SWITCHING ──────────────────────────────────────────
+  function switchTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const tabs = ['pipeline','grants','actions','registry'];
+    document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+    document.getElementById('page-' + id).classList.add('active');
+  }
+
+  // ── FILTER BUTTONS ─────────────────────────────────────────
+  function toggleFilter(btn, val) {
+    btn.closest('.filter-bar, nav').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  // ── CHECKBOX TOGGLE ────────────────────────────────────────
+  function toggleCheck(el) {
+    el.classList.toggle('done');
+    const card = el.closest('.action-item');
+    if (el.classList.contains('done')) {
+      card.style.opacity = '0.5';
+    } else {
+      card.style.opacity = '1';
+    }
+  }
+
+  // ── TEAM FILTER ────────────────────────────────────────────
+  function filterTeam(chip, owner) {
+    document.querySelectorAll('.team-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    document.querySelectorAll('#actions-list .action-item').forEach(item => {
+      if (owner === 'all' || item.dataset.owner === owner) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // ── REGISTRY SEARCH ────────────────────────────────────────
+  function filterRegistry(q) {
+    const term = q.toLowerCase();
+    document.querySelectorAll('#registry-table tbody tr').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+    });
+  }
+
+  // ── MODAL DATA ─────────────────────────────────────────────
+  const modalData = {
+    packard:     { title: 'Packard Foundation', sub: 'Foundation · Ocean Conservation Program', stage: 'Prospect', ask: '$250K–$500K (verify at packard.org/ocean)', owner: 'Daniel Pulse', touch: 'No contact yet', deadline: 'Q3 2026 — LOI', note: 'Major ocean funder, ~$400M in ocean grants historically. No prior relationship with Maritime Blue. First outreach should come via warm intro. Research alignment with Conservation Science & Pacific Ocean programs.' },
+    moore:       { title: 'Gordon & Betty Moore Foundation', sub: 'Foundation · Marine Ecosystems', stage: 'Prospect', ask: 'TBD — verify directly with foundation', owner: 'Joshua Berger', touch: 'No formal contact', deadline: 'TBD', note: 'Significant marine philanthropy portfolio. Amount reported in secondary sources; verify directly. CEO-level relationship recommended for first outreach.' },
+    bezos:       { title: 'Bezos Earth Fund', sub: 'Foundation · AI for Climate & Nature Grand Challenge', stage: 'Research', ask: 'Phase I: $50K → Phase II: up to $2M', owner: 'Ilaria Reale', touch: 'No contact yet', deadline: 'LOI — May 30, 2026', note: '$100M Grand Challenge total. Phase I awards $50K to develop concept; Phase II awards up to $2M. Maritime Blue\'s SMF Collaborative (launched April 3, 2025) and digital platform work are strong alignment points.' },
+    walton:      { title: 'Walton Family Foundation', sub: 'Foundation · Ocean Initiative', stage: 'Research', ask: 'TBD — research needed', owner: 'Daniel Pulse', touch: 'No contact', deadline: 'TBD', note: 'Major ocean funder focused on fisheries, ocean health, and sustainable seafood. Seaweed and aquaculture programs could be strong alignment with Maritime Blue alumni portfolio. Research before outreach.' },
+    bullitt:     { title: 'Bullitt Foundation', sub: 'Foundation · Pacific Northwest Climate', stage: 'Cultivate', ask: 'Verify at bullitt.org', owner: 'Joshua Berger', touch: 'Warm via PNW network', deadline: 'Proposal — June 15, 2026', note: 'Regional Pacific NW foundation with strong climate focus. Joshua has a warm connection via the broader PNW sustainability network. Intro call should happen before May 15 to allow time for proposal prep.' },
+    schmidt:     { title: 'Schmidt Marine Technology', sub: 'Program of The Schmidt Family Foundation ($1.8B assets)', stage: 'Cultivate', ask: '$100K–$500K/year', owner: 'Ilaria Reale', touch: 'No formal contact', deadline: 'Rolling — check schmidtmarine.org', note: 'Funds technology development for ocean health and fisheries. Not a standalone foundation — part of Schmidt Family Foundation ($1.8B). Grant range $100K–$500K confirmed via schmidtmarine.org. LOI approach recommended.' },
+    port:        { title: 'Port of Seattle', sub: 'Government · Anchor Partner', stage: 'Active — renewal', ask: '$150K/yr ongoing', owner: 'Joshua Berger', touch: 'Feb 2026', deadline: 'Impact report — April 30, 2026', note: 'Critical anchor partner. Funded Maritime Blue startup initiative annually at $150K. Also co-investor in MInC ($33M ecosystem investment with WA State). Annual stewardship meeting + report due April 30 — essential for relationship health.' },
+    climateworks:{ title: 'ClimateWorks Foundation', sub: 'Foundation · Zero-Emission Maritime', stage: 'Solicited — pending decision', ask: '$200K ask submitted', owner: 'Daniel Pulse', touch: 'Mar 2026 — proposal submitted', deadline: 'Follow up — April 25', note: 'Proposal submitted March 2026. MacKenzie Scott donated $40M to ClimateWorks for zero-emission maritime work — confirmed program area. Follow up with brief impact update to stay warm while decision is pending.' },
+    commerce:    { title: 'WA Dept. of Commerce', sub: 'State Government · Blue Economy', stage: 'Active — report due', ask: '$200K+ renewal', owner: 'Daniel Pulse', touch: 'Jan 2026', deadline: 'Stewardship report — April 15, 2026', note: 'Core state funder. Report deadline April 15 is critical — missing this jeopardizes the renewal. Impact metrics to include: MInC progress, cohort outcomes, jobs created, startup capital raised by alumni.' },
+    amazon:      { title: 'Amazon — Climate Pledge Fund', sub: 'Corporate · Climate Solutions', stage: 'Prospect', ask: '$100K+ (exploratory)', owner: 'Ilaria Reale', touch: 'No contact', deadline: 'Research eligibility', note: 'The Climate Pledge Fund invests in sustainable technology and solutions. Amazon is headquartered in Seattle — potential strategic alignment with Maritime Blue\'s Pacific NW mission and accelerator model. Research eligibility before outreach.' },
+  };
+
+  function openModal(key) {
+    const d = modalData[key];
+    if (!d) return;
+    document.getElementById('modal-title').textContent = d.title;
+    document.getElementById('modal-sub').textContent = d.sub;
+    document.getElementById('modal-stage').textContent = d.stage;
+    document.getElementById('modal-ask').textContent = d.ask;
+    document.getElementById('modal-owner').textContent = d.owner;
+    document.getElementById('modal-touch').textContent = d.touch;
+    document.getElementById('modal-deadline').textContent = d.deadline;
+    document.getElementById('modal-note').textContent = d.note;
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+</script>
+</body>
+</html>
